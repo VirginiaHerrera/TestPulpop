@@ -7,9 +7,6 @@ Una pequeña API REST para crear, consultar, actualizar y eliminar tareas. Desar
 1. Clona este repositorio
 2. Instala las dependencias:
 
-/*
-```bash
-*/
 git clone https://github.com/VirginiaHerrera/TestPulpop.git
 cd TestPulpop
 npm install
