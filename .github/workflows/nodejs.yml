@@ -1,0 +1,29 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ]       # Corre al hacer push en main
+  pull_request:
+    branches: [ main ]       # Corre en PR hacia main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest   # Sistema para correr la acción
+
+    steps:
+    - uses: actions/checkout@v3   # Clona el repo
+
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test          # Aquí se ejecutan las pruebas si las tienes
+
+    - name: Run app (optional)
+      run: node index.js &
