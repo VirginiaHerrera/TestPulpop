@@ -1,6 +1,9 @@
+//fs: módulo de Node.js para trabajar con el sistema de archivos.
+//better-sqlite3: biblioteca para manejar SQLite de forma rápida y sin promesas.
 const fs = require('fs');
 const Database = require('better-sqlite3');
 
+//Indica la ruta del archivo de la bbdd, definiendo el nombre del archivo.
 const DB_PATH = 'tareas.db';
 
 // Verificar si el archivo existe y es una base de datos válida

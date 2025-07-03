@@ -1,7 +1,12 @@
+//setupSwagger: importa la función que configura Swagger para documentación.
 const setupSwagger = require('./swagger');
+//express: framework para construir APIs en Node.js.
 const express = require('express');
+//db: conexión a SQLite creada en db.js.
 const db = require('./db');
+//app: instancia de la app Express.
 const app = express();
+//app.use(express.json()): permite recibir datos JSON en las peticiones (como POST, PUT).
 app.use(express.json());
 
 // Crear tarea
@@ -33,18 +38,21 @@ app.use(express.json());
  *         description: Tarea creada
  */
 
+//Extrae los datos enviados por el cliente.
 app.post('/tasks', (req, res) => {
-  const { title, description, status } = req.body;
+  const { title, description, status } = req.body;  
+  //Valida que el título exista y que el estado sea uno permitido. El include revisa si el estado está en la lista de estados válidos.
+  //Si no es válido, devuelve un error 400 (Bad Request).
   if (!title || !['pending', 'in_progress', 'done'].includes(status)) {
     return res.status(400).json({ error: 'Datos inválidos' });
   }
-
+//Inserta la nueva tarea en la base de datos con fecha actual.
   const stmt = db.prepare(`
     INSERT INTO tasks (title, description, status, created_at)
     VALUES (?, ?, ?, ?)
   `);
   const result = stmt.run(title, description || '', status, new Date().toISOString());
-
+//Obtiene y devuelve la tarea recién creada.
   const task = db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(result.lastInsertRowid);
   res.status(201).json(task);
 });
@@ -60,6 +68,7 @@ app.post('/tasks', (req, res) => {
  *       200:
  *         description: Lista de tareas
  */
+//Consulta todas las tareas y las devuelve en JSON.
 app.get('/tasks', (req, res) => {
   const tasks = db.prepare(`SELECT * FROM tasks`).all();
   res.json(tasks);
@@ -123,27 +132,29 @@ app.get('/tasks/:id', (req, res) => {
  *       404:
  *         description: Tarea no encontrada
  */
+//Recibe datos nuevos.
 app.put('/tasks/:id', (req, res) => {
   const { title, description, status } = req.body;
+  //Verifica si la tarea existe.
   const task = db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(req.params.id);
   if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
-
+  //Usa el valor nuevo si existe, o conserva el anterior.
   const updatedTask = {
     title: title ?? task.title,
     description: description ?? task.description,
     status: status ?? task.status,
   };
-
+  //Usa un nuevo valor o conserva el anterior.
   if (!['pending', 'in_progress', 'done'].includes(updatedTask.status)) {
     return res.status(400).json({ error: 'Estado inválido' });
   }
-
+  //Actualiza la tarea en la base de datos y la devuelve modificada.
   db.prepare(`
     UPDATE tasks
     SET title = ?, description = ?, status = ?
     WHERE id = ?
   `).run(updatedTask.title, updatedTask.description, updatedTask.status, req.params.id);
-
+//updatedTask. forma moderno de js para crear un objeto con las propiedades actualizadas. Permite conservar los valores anteriores si no se envían nuevos.
   const refreshed = db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(req.params.id);
   res.json(refreshed);
 });
@@ -167,9 +178,10 @@ app.put('/tasks/:id', (req, res) => {
  *       404:
  *         description: Tarea no encontrada
  */
-
+//Elimina la tarea por ID.
 app.delete('/tasks/:id', (req, res) => {
   const result = db.prepare(`DELETE FROM tasks WHERE id = ?`).run(req.params.id);
+  //Si no hay cambios (nada se borró), responde con 404. Si se eliminó, devuelve 204 (sin contenido).
   if (result.changes === 0) return res.status(404).json({ error: 'Tarea no encontrada' });
   res.status(204).send();
 });
