@@ -8,6 +8,11 @@ const db = require('./db');
 const app = express();
 //app.use(express.json()): permite recibir datos JSON en las peticiones (como POST, PUT).
 app.use(express.json());
+module.exports = app; // Exporta la app para usarla en tests y otros archivos.
+
+
+//const app = require('./app');
+
 
 // Crear tarea
 /**
@@ -188,6 +193,14 @@ app.delete('/tasks/:id', (req, res) => {
 
 setupSwagger(app);
 // Inicializar base de datos
+/*
 app.listen(3000, () => {
   console.log('API conectada a SQLite en http://localhost:3000');
 });
+*/
+const PORT = 3000;
+if(require.main === module){
+  app.listen(PORT, () => {
+    console.log(`API conectada a SQLite en http://localhost:${PORT}`);
+  });
+}
